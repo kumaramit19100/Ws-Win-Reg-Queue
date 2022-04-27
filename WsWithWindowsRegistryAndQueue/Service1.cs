@@ -37,7 +37,7 @@ namespace WsWithWindowsRegistryAndQueue
             CloudQueueMessage queueMessage = cloudQueue.GetMessage();
             msg(queueMessage.AsString);         
             
-            timer.Interval = 1000;
+            timer.Interval = 10000;
         }
 
         protected override void OnStop()
