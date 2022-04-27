@@ -1,0 +1,760 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+    <assembly>
+        <name>Microsoft.Azure.WebJobs.Extensions.Storage.Queues</name>
+    </assembly>
+    <members>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.AzureStorageQueuesWebJobsStartup">
+            <inheritdoc cref="T:Microsoft.Azure.WebJobs.Hosting.IWebJobsStartup" />
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.AzureStorageQueuesWebJobsStartup.Configure(Microsoft.Azure.WebJobs.IWebJobsBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Queues.DefaultQueueProcessorFactory">
+            <summary>
+            The default <see cref="T:Microsoft.Azure.WebJobs.Host.Queues.IQueueProcessorFactory" /> implementation used by <see cref="T:Microsoft.Azure.WebJobs.Host.QueuesOptions" />.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Queues.DefaultQueueProcessorFactory.Create(Microsoft.Azure.WebJobs.Host.Queues.QueueProcessorOptions)">
+            <summary>
+            Creates a <see cref="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor" /> using the specified context.
+            </summary>
+            <param name="context">The <see cref="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessorOptions" /> to use.</param>
+            <returns>A <see cref="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor" /> instance.</returns>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Queues.QueueCausalityManager">
+            <summary>
+            Tracks causality via JSON formatted queue message content.
+            Adds an extra field to the JSON object for the parent guid name.
+            </summary>
+            <remarks>
+            Important that this class can interoperate with external queue messages,
+            so be resilient to a missing guid marker.
+            Can we switch to some auxiliary table? Beware, CloudQueueMessage.
+            Id is not filled out until after the message is queued,
+            but then there's a race between updating the aux storage and another function picking up the message.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Queues.QueueClientExtensions.ValidateQueueName(System.String)">
+            <summary>
+            Ensures that the passed name is a valid queue name.
+            If not, an ArgumentException is thrown
+            </summary>
+            <exception cref="T:System.ArgumentException">If the name is invalid</exception>
+            <param name="name">The name to be tested</param>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.Storage.Queues.QueueServiceClientProvider.ServiceUriSubDomain">
+            <summary>
+            Gets the subdomain for the resource (i.e. blob, queue, file, table)
+            </summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Queues.QueueServiceClientProvider.CreateClientOptions(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Creates client options from the given configuration
+            </summary>
+            <param name="configuration">Registered <see cref="T:Microsoft.Extensions.Configuration.IConfiguration" /></param>
+            <returns>Client options</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Queues.QueueServiceClientProvider.CreateClient(Microsoft.Extensions.Configuration.IConfiguration,Azure.Core.TokenCredential,Azure.Storage.Queues.QueueClientOptions)">
+            <summary>
+            Creates a storage client
+            </summary>
+            <param name="configuration">The <see cref="T:Microsoft.Extensions.Configuration.IConfiguration" /> to use when creating Client-specific objects.</param>
+            <param name="tokenCredential">The <see cref="T:Azure.Core.TokenCredential" /> to authenticate for requests.</param>
+            <param name="options">Generic options to use for the client</param>
+            <returns>Storage client</returns>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Queues.QueueTriggerParameterDescriptor">
+            <summary>Represents a parameter triggered on a queue in Azure Storage.</summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.Storage.Queues.QueueTriggerParameterDescriptor.AccountName">
+            <summary>Gets or sets the name of the storage account.</summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.Storage.Queues.QueueTriggerParameterDescriptor.QueueName">
+            <summary>Gets or sets the name of the queue.</summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Queues.QueueTriggerParameterDescriptor.GetTriggerReason(System.Collections.Generic.IDictionary{System.String,System.String})">
+            <inheritdoc />
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.AsyncConverter`2">
+            <summary>
+            An asynchronous converter that delegates to an inner synchronous converter.
+            </summary>
+            <typeparam name="TInput">The type to convert from.</typeparam>
+            <typeparam name="TOutput">The type to convert to.</typeparam>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.AsyncConverter`2.#ctor(Microsoft.Azure.WebJobs.IConverter{`0,`1})">
+            <summary>
+            Creates a new instance.
+            </summary>
+            <param name="innerConverter">The inner converter to delegate to.</param>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.AsyncConverter`2.ConvertAsync(`0,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.CompositeObjectToTypeConverter`1">
+            <summary>
+            An object converter that encapsulates a set of inner converters.
+            </summary>
+            <typeparam name="T">The output <see cref="T:System.Type" /></typeparam>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.CompositeObjectToTypeConverter`1.#ctor(System.Collections.Generic.IEnumerable{Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.IObjectToTypeConverter{`0}})">
+            <summary>
+            Create a new instance.
+            </summary>
+            <param name="converters">The set of converters to encapsulate.</param>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.CompositeObjectToTypeConverter`1.#ctor(Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.IObjectToTypeConverter{`0}[])">
+            <summary>
+            Create a new instance.
+            </summary>
+            <param name="converters">The set of converters to encapsulate.</param>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.CompositeObjectToTypeConverter`1.TryConvert(System.Object,`0@)">
+            <summary>
+            Try to perform a conversion by attempting each inner converter in order
+            until one succeeds, or all fail.
+            </summary>
+            <param name="input">The value to convert.</param>
+            <param name="output">The converted value if successful.</param>
+            <returns>True if the conversion was successful, false otherwise.</returns>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.ConversionResult`1">
+            <summary>
+            Represents the result of a conversion.
+            </summary>
+            <typeparam name="TResult">The <see cref="T:System.Type" /> of the conversion result.</typeparam>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.ConversionResult`1.Succeeded">
+            <summary>
+            Gets a value indicating whether the conversion succeeded.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.ConversionResult`1.Result">
+            <summary>
+            Gets the conversion result.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.IAsyncObjectToTypeConverter`1">
+            <summary>
+            Provides an interface for performing asynchronous conversions from
+            an object to a particular type.
+            </summary>
+            <typeparam name="TOutput">The type to convert to.</typeparam>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.IAsyncObjectToTypeConverter`1.TryConvertAsync(System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Try to convert the specified input object.
+            </summary>
+            <param name="input">The object to convert.</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken" /> to use.</param>
+            <returns>A task that returns the conversion result.</returns>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.IdentityConverter`1">
+            <summary>
+            A converter that simply returns the value to be converted,
+            without performing any conversions.
+            </summary>
+            <typeparam name="TValue">The <see cref="T:System.Type" /> being converted.</typeparam>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.IdentityConverter`1.Convert(`0)">
+            <inheritdoc />
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.IObjectToTypeConverter`1">
+            <summary>
+            Defines methods for converting objects to another <see cref="T:System.Type" />.
+            </summary>
+            <typeparam name="TOutput">The output <see cref="T:System.Type" />.</typeparam>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Converters.IObjectToTypeConverter`1.TryConvert(System.Object,`0@)">
+            <summary>
+            Try to convert the specified object to the output <see cref="T:System.Type" />.
+            </summary>
+            <param name="input">The object to convert.</param>
+            <param name="output">If the conversion was successful, the result of the conversion.</param>
+            <returns>True if the conversion was successful, false otherwise.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.HostQueueNames.GetHostBlobTriggerQueueName(System.String)">
+            <summary>Gets the shared host blob trigger queue name.</summary>
+            <param name="hostId">The host ID.</param>
+            <returns>The shared host blob trigger queue name.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.HostQueueNames.GetHostQueueName(System.String)">
+            <summary>Gets the host instance queue name.</summary>
+            <param name="hostId">The host ID.</param>
+            <returns>The host instance queue name.</returns>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Listeners.ISharedContextProvider">
+            <summary>
+            Interface for providing host level state persistence.
+            A new instance of the provider is created when a host
+            is constructed.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Listeners.QueueTriggerMetrics">
+            <summary>
+            Metrics type representing the status of an Azure Queue.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Listeners.QueueTriggerMetrics.QueueLength">
+            <summary>
+            The current length of the queue.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Listeners.QueueTriggerMetrics.QueueTime">
+            <summary>
+            The length of time the next message in the queue has been
+            sitting there.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Protocols.JsonSerialization">
+            <summary>Provides the standard <see cref="F:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Protocols.JsonSerialization.JsonSerializerSettings" /> used by protocol data.</summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Protocols.JsonSerialization.Settings">
+            <summary>Gets the standard <see cref="F:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Protocols.JsonSerialization.JsonSerializerSettings" /> used by protocol data.</summary>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.RequestFailedExceptionExtensions">
+            <summary>Provides extension methods for the <see cref="T:Azure.RequestFailedException" /> class.</summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.RequestFailedExceptionExtensions.IsNotFound(Azure.RequestFailedException)">
+            <summary>Determines whether the exception is due to a 404 Not Found error.</summary>
+            <param name="exception">The storage exception.</param>
+            <returns>
+            <see langword="true" /> if the exception is due to a 404 Not Found error; otherwise <see langword="false" />.
+            </returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.RequestFailedExceptionExtensions.IsOk(Azure.RequestFailedException)">
+            <summary>Determines whether the exception occurred despite a 200 OK response.</summary>
+            <param name="exception">The storage exception.</param>
+            <returns>
+            <see langword="true" /> if the exception occurred despite a 200 OK response; otherwise
+            <see langword="false" />.
+            </returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.RequestFailedExceptionExtensions.IsBadRequestPopReceiptMismatch(Azure.RequestFailedException)">
+            <summary>
+            Determines whether the exception is due to a 400 Bad Request error with the error code PopReceiptMismatch.
+            </summary>
+            <param name="exception">The storage exception.</param>
+            <returns>
+            <see langword="true" /> if the exception is due to a 400 Bad Request error with the error code
+            PopReceiptMismatch; otherwise <see langword="false" />.
+            </returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.RequestFailedExceptionExtensions.IsConflictQueueBeingDeletedOrDisabled(Azure.RequestFailedException)">
+            <summary>
+            Determines whether the exception is due to a 409 Conflict error with the error code QueueBeingDeleted or
+            QueueDisabled.
+            </summary>
+            <param name="exception">The storage exception.</param>
+            <returns>
+            <see langword="true" /> if the exception is due to a 409 Conflict error with the error code QueueBeingDeleted
+            or QueueDisabled; otherwise <see langword="false" />.
+            </returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.RequestFailedExceptionExtensions.IsNotFoundMessageOrQueueNotFound(Azure.RequestFailedException)">
+            <summary>
+            Determines whether the exception is due to a 404 Not Found error with the error code MessageNotFound or
+            QueueNotFound.
+            </summary>
+            <param name="exception">The storage exception.</param>
+            <returns>
+            <see langword="true" /> if the exception is due to a 404 Not Found error with the error code MessageNotFound
+            or QueueNotFound; otherwise <see langword="false" />.
+            </returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.RequestFailedExceptionExtensions.IsNotFoundQueueNotFound(Azure.RequestFailedException)">
+            <summary>
+            Determines whether the exception is due to a 404 Not Found error with the error code QueueNotFound.
+            </summary>
+            <param name="exception">The storage exception.</param>
+            <returns>
+            <see langword="true" /> if the exception is due to a 404 Not Found error with the error code QueueNotFound;
+            otherwise <see langword="false" />.
+            </returns>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Timers.IRecurrentCommand">
+            <summary>Defines a recurring command that may fail gracefully.</summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Timers.IRecurrentCommand.TryExecuteAsync(System.Threading.CancellationToken)">
+            <summary>Attempts to execute the command.</summary>
+            <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+            <returns>
+            A <see cref="T:System.Threading.Tasks.Task" /> that will execute the command. The task's result is <see langword="false" /> if the
+            command fails gracefully; otherwise <see langword="true" />.
+            </returns>
+            <remarks>
+            The task completes successfully with a <see langword="false" /> result rather than faulting to indicate a
+            graceful failure.
+            </remarks>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Timers.TaskSeriesCommandResult.Wait">
+            <summary>
+            Wait for this task to complete before calling <see cref="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Timers.ITaskSeriesCommand.ExecuteAsync(System.Threading.CancellationToken)" /> again.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Timers.TaskSeriesTimer">
+            <summary>Represents a timer that executes one task after another in a series.</summary>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Triggers.ITriggerDataArgumentBinding`1">
+            <summary>
+            Interface providing the capability to bind to trigger parameter values.
+            </summary>
+            <typeparam name="TTriggerValue">The type of the trigger value.</typeparam>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Triggers.ITriggerDataArgumentBinding`1.ValueType">
+            <summary>
+            Gets the type of the trigger value.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Triggers.ITriggerDataArgumentBinding`1.BindingDataContract">
+            <summary>
+            Gets the binding data contract.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Triggers.ITriggerDataArgumentBinding`1.BindAsync(`0,Microsoft.Azure.WebJobs.Host.Bindings.ValueBindingContext)">
+            <summary>
+            Bind to the specified trigger value.
+            </summary>
+            <param name="value">The value to bind to.</param>
+            <param name="context">The binding context.</param>
+            <returns>A task that returns the <see cref="T:Microsoft.Azure.WebJobs.Host.Triggers.ITriggerData" /> for the binding.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.TypeUtility.GetHierarchicalAttributeOrNull(System.Reflection.ParameterInfo,System.Type)">
+            <summary>
+            Walk from the parameter up to the containing type, looking for an instance
+            of the specified attribute type, returning it if found.
+            </summary>
+            <param name="parameter">The parameter to check.</param>
+            <param name="attributeType">The attribute type to look for.</param>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.TypeUtility.GetHierarchicalAttributeOrNull(System.Reflection.MethodInfo,System.Type)">
+            <summary>
+            Walk from the method up to the containing type, looking for an instance
+            of the specified attribute type, returning it if found.
+            </summary>
+            <param name="method">The method to check.</param>
+            <param name="type">The attribute type to look for.</param>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.StorageClientProvider`2">
+            <summary>
+            Abstraction to provide storage clients from the connection names.
+            This gets the storage account name via the binding attribute's <see cref="P:Microsoft.Azure.WebJobs.IConnectionProvider.Connection" />
+            property.
+            If the connection is not specified on the attribute, it uses a default account.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.StorageClientProvider`2.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Azure.AzureComponentFactory,Microsoft.Extensions.Azure.AzureEventSourceLogForwarder,Microsoft.Extensions.Logging.ILogger{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.StorageClientProvider`2" /> class that uses the registered Azure services.
+            </summary>
+            <param name="configuration">The configuration to use when creating Client-specific objects. <see cref="T:Microsoft.Extensions.Configuration.IConfiguration" /></param>
+            <param name="componentFactory">The Azure factory responsible for creating clients. <see cref="T:Microsoft.Extensions.Azure.AzureComponentFactory" /></param>
+            <param name="logForwarder">Log forwarder that forwards events to ILogger. <see cref="T:Microsoft.Extensions.Azure.AzureEventSourceLogForwarder" /></param>
+            <param name="logger">Logger used when there is an error creating a client</param>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.StorageClientProvider`2.ServiceUriSubDomain">
+            <summary>
+            Gets the subdomain for the resource (i.e. blob, queue, file, table)
+            </summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.StorageClientProvider`2.Get(System.String,Microsoft.Azure.WebJobs.INameResolver)">
+            <summary>
+            Gets the storage client specified by <paramref name="name" />
+            </summary>
+            <param name="name">Name of the connection to use</param>
+            <param name="resolver">A resolver to interpret the provided connection <paramref name="name" />.</param>
+            <returns>Client that was created.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.StorageClientProvider`2.Get(System.String)">
+            <summary>
+            Gets the storage client specified by <paramref name="name" />
+            </summary>
+            <param name="name">Name of the connection to use</param>
+            <returns>Client that was created.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.StorageClientProvider`2.CreateClient(Microsoft.Extensions.Configuration.IConfiguration,Azure.Core.TokenCredential,`1)">
+            <summary>
+            Creates a storage client
+            </summary>
+            <param name="configuration">The <see cref="T:Microsoft.Extensions.Configuration.IConfiguration" /> to use when creating Client-specific objects.</param>
+            <param name="tokenCredential">The <see cref="T:Azure.Core.TokenCredential" /> to authenticate for requests.</param>
+            <param name="options">Generic options to use for the client</param>
+            <returns>Storage client</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.StorageClientProvider`2.GetHost">
+            <summary>
+            The host account is for internal storage mechanisms like load balancer queuing.
+            </summary>
+            <returns>Storage client</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.StorageClientProvider`2.CreateClientOptions(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Creates client options from the given configuration
+            </summary>
+            <param name="configuration">Registered <see cref="T:Microsoft.Extensions.Configuration.IConfiguration" /></param>
+            <returns>Client options</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.StorageClientProvider`2.TryGetServiceUri(Microsoft.Extensions.Configuration.IConfiguration,System.Uri@)">
+            <summary>
+            Either constructs the serviceUri from the provided accountName
+            or retrieves the serviceUri for the specific resource (i.e. blobServiceUri or queueServiceUri)
+            </summary>
+            <param name="configuration">Registered <see cref="T:Microsoft.Extensions.Configuration.IConfiguration" /></param>
+            <param name="serviceUri">instantiates the serviceUri</param>
+            <returns>retrieval success</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.StorageClientProvider`2.FormatServiceUri(System.String,System.String,System.String)">
+            <summary>
+            Generates the serviceUri for a particular storage resource
+            </summary>
+            <param name="accountName">accountName for the storage account</param>
+            <param name="defaultProtocol">protocol to use for REST requests</param>
+            <param name="endpointSuffix">endpoint suffix for the storage account</param>
+            <returns>Uri for the storage resource</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.StorageClientProvider`2.IsConnectionStringPresent(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Checks if the specified <see cref="T:Microsoft.Extensions.Configuration.IConfiguration" /> object represents a connection string.
+            </summary>
+            <param name="configuration">The <see cref="T:Microsoft.Extensions.Configuration.IConfiguration" /> to check</param>
+            <returns>true if this <see cref="T:Microsoft.Extensions.Configuration.IConfiguration" /> object is a connection string; false otherwise.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Clients.Shared.WebJobsConfigurationExtensions.GetConnectionStringOrSetting(Microsoft.Extensions.Configuration.IConfiguration,System.String)">
+            <summary>
+            Looks for a connection string by first checking the ConfigurationStrings section, and then the root.
+            </summary>
+            <param name="configuration">The configuration.</param>
+            <param name="connectionName">The connection string key.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Host.Queues.IQueueProcessorFactory">
+            <summary>
+            Factory for creating <see cref="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor" /> instances.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Host.Queues.IQueueProcessorFactory.Create(Microsoft.Azure.WebJobs.Host.Queues.QueueProcessorOptions)">
+            <summary>
+            Creates a <see cref="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor" /> using the specified context.
+            </summary>
+            <param name="queueProcessorOptions">The <see cref="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessorOptions" /> to use.</param>
+            <returns>A <see cref="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor" /> instance.</returns>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Host.Queues.PoisonMessageEventArgs">
+            <summary>
+            Event argument class for when poison messages
+            are added to a poison queue.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Host.Queues.PoisonMessageEventArgs.#ctor(Azure.Storage.Queues.Models.QueueMessage,Azure.Storage.Queues.QueueClient)">
+            <summary>
+            Constructs a new instance.
+            </summary>
+            <param name="message">The poison message</param>
+            <param name="poisonQueue">The poison queue</param>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Host.Queues.PoisonMessageEventArgs.Message">
+            <summary>
+            The poison message
+            </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Host.Queues.PoisonMessageEventArgs.PoisonQueue">
+            <summary>
+            The poison queue
+            </summary>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor">
+            <summary>
+            This class defines a strategy used for processing queue messages.
+            </summary>
+            <remarks>
+            Custom <see cref="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor" /> implementations can be registered by implementing
+            a custom <see cref="T:Microsoft.Azure.WebJobs.Host.Queues.IQueueProcessorFactory" />.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor.#ctor(Microsoft.Azure.WebJobs.Host.Queues.QueueProcessorOptions)">
+            <summary>
+            Constructs a new instance.
+            </summary>
+            <param name="queueProcessorOptions">The options.</param>
+        </member>
+        <member name="E:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor.MessageAddedToPoisonQueueAsync">
+            <summary>
+            Event raised when a message is added to the poison queue.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor.BeginProcessingMessageAsync(Azure.Storage.Queues.Models.QueueMessage,System.Threading.CancellationToken)">
+            <summary>
+            This method is called when there is a new message to process, before the job function is invoked.
+            This allows any preprocessing to take place on the message before processing begins.
+            </summary>
+            <param name="message">The message to process.</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken" /> to use</param>
+            <returns>True if the message processing should continue, false otherwise.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor.CompleteProcessingMessageAsync(Azure.Storage.Queues.Models.QueueMessage,Microsoft.Azure.WebJobs.Host.Executors.FunctionResult,System.Threading.CancellationToken)">
+            <summary>
+            This method completes processing of the specified message, after the job function has been invoked.
+            </summary>
+            <remarks>
+            If the message was processed successfully, the message should be deleted. If message processing failed, the
+            message should be release back to the queue, or if the maximum dequeue count has been exceeded, the message
+            should be moved to the poison queue (if poison queue handling is configured for the queue).
+            </remarks>
+            <param name="message">The message to complete processing for.</param>
+            <param name="result">The <see cref="T:Microsoft.Azure.WebJobs.Host.Executors.FunctionResult" /> from the job invocation.</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken" /> to use.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor.CopyMessageToPoisonQueueAsync(Azure.Storage.Queues.Models.QueueMessage,Azure.Storage.Queues.QueueClient,System.Threading.CancellationToken)">
+            <summary>
+            Moves the specified message to the poison queue.
+            </summary>
+            <param name="message">The poison message.</param>
+            <param name="poisonQueue">The poison queue to copy the message to.</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken" /> to use.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor.ReleaseMessageAsync(Azure.Storage.Queues.Models.QueueMessage,Microsoft.Azure.WebJobs.Host.Executors.FunctionResult,System.TimeSpan,System.Threading.CancellationToken)">
+            <summary>
+            Release the specified failed message back to the queue.
+            </summary>
+            <param name="message">The message to release</param>
+            <param name="result">The <see cref="T:Microsoft.Azure.WebJobs.Host.Executors.FunctionResult" /> from the job invocation.</param>
+            <param name="visibilityTimeout">The visibility timeout to set for the message.</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken" /> to use.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor.DeleteMessageAsync(Azure.Storage.Queues.Models.QueueMessage,System.Threading.CancellationToken)">
+            <summary>
+            Delete the specified message.
+            </summary>
+            <param name="message">The message to delete.</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken" /> to use.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor.OnMessageAddedToPoisonQueueAsync(Microsoft.Azure.WebJobs.Host.Queues.PoisonMessageEventArgs)">
+            <summary>
+            Called to raise the MessageAddedToPoisonQueue event.
+            </summary>
+            <param name="e">The event arguments.</param>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessorOptions">
+            <summary>
+            Provides options input for creating<see cref="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor" />.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessorOptions.#ctor(Azure.Storage.Queues.QueueClient,Microsoft.Extensions.Logging.ILoggerFactory,Microsoft.Azure.WebJobs.Host.QueuesOptions,Azure.Storage.Queues.QueueClient)">
+            <summary>
+            Constructs a new instance.
+            </summary>
+            <param name="queue">The queue the <see cref="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor" /> will operate on.</param>
+            <param name="loggerFactory">The <see cref="T:Microsoft.Extensions.Logging.ILoggerFactory" /> to create an <see cref="T:Microsoft.Extensions.Logging.ILogger" /> from.</param>
+            <param name="options">The queue configuration.</param>
+            <param name="poisonQueue">The queue to move messages to when unable to process a message after the maximum dequeue count has been exceeded. May be null.</param>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessorOptions.Queue">
+            <summary>
+            Gets the queue the <see cref="T:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessor" /> will operate on.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessorOptions.PoisonQueue">
+            <summary>
+            Gets the queue to move messages to when unable to process a message after the maximum dequeue count has been exceeded. May be null.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessorOptions.Logger">
+            <summary>
+            Gets the <see cref="T:Microsoft.Extensions.Logging.ILogger" />.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Host.Queues.QueueProcessorOptions.Options">
+            <summary>
+            Gets the queue configuration.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.Host.QueuesOptions">
+            <summary>
+            Represents configuration for <see cref="T:Microsoft.Azure.WebJobs.QueueTriggerAttribute" />.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Host.QueuesOptions.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Microsoft.Azure.WebJobs.Host.QueuesOptions" /> class.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.BatchSize">
+             <summary>
+             Gets or sets the number of queue messages to retrieve from the queue (per job method).
+             Must be in range within 1 and 32. The default is 16.
+            
+             <remarks>
+             Both the <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.NewBatchThreshold" /> and <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.BatchSize" /> settings control how many messages are being processed in parallel.
+             The job keeps requesting messages in batches of <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.BatchSize" /> size until number of messages currently being processed
+             is above <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.NewBatchThreshold" />. Then the job requests new batch of messages only if number of currently processed messages
+             drops at or below <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.NewBatchThreshold" />.
+            
+             The maximum number of messages processed in parallel by the job is <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.NewBatchThreshold" /> plus <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.BatchSize" />. These manually
+             configured options aren't used when Dynamic Concurrency is enabled. See <see cref="P:Microsoft.Azure.WebJobs.Host.Scale.ConcurrencyOptions.DynamicConcurrencyEnabled" /> for details.
+             When dynamic concurrency is enabled, the host will increase/decrease function concurrency dynamically as needed.
+             </remarks>
+             </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.NewBatchThreshold">
+             <summary>
+             Gets or sets the threshold at which a new batch of messages will be fetched (per job method).
+             Must be zero or positive integer. If not set then it defaults to <code>BatchSize/2*processorCount</code>.
+            
+             <remarks>
+             Both the <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.NewBatchThreshold" /> and <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.BatchSize" /> settings control how many messages are being processed in parallel.
+             The job keeps requesting messages in batches of <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.BatchSize" /> size until number of messages currently being processed
+             is above <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.NewBatchThreshold" />. Then the job requests new batch of messages only if number of currently processed messages
+             drops at or below <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.NewBatchThreshold" />.
+            
+             The maximum number of messages processed in parallel by the job is <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.NewBatchThreshold" /> plus <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.BatchSize" />.
+             </remarks>
+             </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.MaxPollingInterval">
+            <summary>
+            Gets or sets the longest period of time to wait before checking for a message to arrive when a queue remains
+            empty.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.MaxDequeueCount">
+            <summary>
+            Gets or sets the number of times to try processing a message before moving it to the poison queue (where
+            possible).
+            </summary>
+            <remarks>
+            Some queues do not have corresponding poison queues, and this property does not apply to them. Specifically,
+            there are no corresponding poison queues for any queue whose name already ends in "-poison" or any queue
+            whose name is already too long to add a "-poison" suffix.
+            </remarks>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.VisibilityTimeout">
+            <summary>
+            Gets or sets the default message visibility timeout that will be used
+            for messages that fail processing. The default is TimeSpan.Zero. To increase
+            the time delay between retries, increase this value.
+            </summary>
+            <remarks>
+            When message processing fails, the message will remain in the queue and
+            its visibility will be updated with this value. The message will then be
+            available for reprocessing after this timeout expires.
+            </remarks>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.MessageEncoding">
+            <summary>
+            Gets or sets a message encoding that determines how queue message body is represented in HTTP requests and responses.
+            The default is <see cref="F:Azure.Storage.Queues.QueueMessageEncoding.Base64" />.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Host.QueuesOptions.Microsoft#Azure#WebJobs#Hosting#IOptionsFormatter#Format">
+            <inheritdoc />
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.QueueAttribute">
+             <summary>
+             Attribute used to bind a parameter to an Azure Queue.
+             </summary>
+             <remarks>
+             The method parameter type can be one of the following:
+             <list type="bullet">
+             <item><description><see cref="T:Azure.Storage.Queues.QueueClient" /></description></item>
+             <item><description><see cref="T:Azure.Storage.Queues.Models.QueueMessage" /> (out parameter)</description></item>
+             <item><description><see cref="T:System.String" /> (out parameter)</description></item>
+             <item><description><see cref="T:byte[]" /> (out parameter)</description></item>
+             <item><description><see cref="T:System.BinaryData" /> (out parameter)</description></item>
+             <item><description>A user-defined type (out parameter, serialized as JSON)</description></item>
+             <item><description><see cref="T:Microsoft.Azure.WebJobs.ICollector`1" /> of these types (to enqueue multiple messages via <see cref="M:Microsoft.Azure.WebJobs.ICollector`1.Add(`0)" /></description></item>
+             <item><description><see cref="T:Microsoft.Azure.WebJobs.IAsyncCollector`1" /> of these types (to enqueue multiple messages via <see cref="M:Microsoft.Azure.WebJobs.IAsyncCollector`1.AddAsync(`0,System.Threading.CancellationToken)" /></description></item>
+             </list>
+            
+             By default the extension Base64-encodes outgoing messages.
+             This behavior can be changed by setting <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.MessageEncoding" />.
+             For example, to configure Azure Functions to perform no base64 encoding/decoding, specify the following in host.json.
+             <code>
+             "extensions": {
+               "queues": {
+                 "messageEncoding": "none"
+               }
+             }
+             </code>
+             </remarks>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.QueueAttribute.#ctor(System.String)">
+            <summary>Initializes a new instance of the <see cref="T:Microsoft.Azure.WebJobs.QueueAttribute" /> class.</summary>
+            <param name="queueName">The name of the queue to which to bind.</param>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.QueueAttribute.QueueName">
+            <summary>
+            Gets the name of the queue to which to bind.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.QueueAttribute.Connection">
+            <summary>
+            Gets or sets the app setting name that contains the Azure Storage connection string.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Azure.WebJobs.QueueTriggerAttribute">
+             <summary>
+             Attribute used to bind a parameter to an Azure Queue message, causing the function to run when a
+             message is enqueued.
+             </summary>
+             <remarks>
+             The method parameter type can be one of the following:
+             <list type="bullet">
+             <item><description><see cref="T:Azure.Storage.Queues.Models.QueueMessage" /></description></item>
+             <item><description><see cref="T:System.String" /></description></item>
+             <item><description><see cref="T:byte[]" /></description></item>
+             <item><description><see cref="T:System.BinaryData" /></description></item>
+             <item><description>A user-defined type (serialized as JSON)</description></item>
+             </list>
+            
+             By default messages received from the queue are expected to be Base64-encoded and are decoded before calling the function.
+             This behavior can be changed by setting <see cref="P:Microsoft.Azure.WebJobs.Host.QueuesOptions.MessageEncoding" />.
+             For example, to configure Azure Functions to perform no base64 encoding/decoding, specify the following in host.json.
+             <code>
+             "extensions": {
+               "queues": {
+                 "messageEncoding": "none"
+               }
+             }
+             </code>
+             </remarks>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.QueueTriggerAttribute.#ctor(System.String)">
+            <summary>Initializes a new instance of the <see cref="T:Microsoft.Azure.WebJobs.QueueTriggerAttribute" /> class.</summary>
+            <param name="queueName">The name of the queue to which to bind.</param>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.QueueTriggerAttribute.QueueName">
+            <summary>Gets the name of the queue to which to bind.</summary>
+        </member>
+        <member name="P:Microsoft.Azure.WebJobs.QueueTriggerAttribute.Connection">
+            <summary>
+            Gets or sets the app setting name that contains the Azure Storage connection string.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Extensions.Hosting.StorageQueuesWebJobsBuilderExtensions">
+            <summary>
+            Extension methods for Storage Queues integration.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.StorageQueuesWebJobsBuilderExtensions.AddAzureStorageQueues(Microsoft.Azure.WebJobs.IWebJobsBuilder,System.Action{Microsoft.Azure.WebJobs.Host.QueuesOptions})">
+            <summary>
+            Adds the Storage Queues extension to the provided <see cref="T:Microsoft.Azure.WebJobs.IWebJobsBuilder" />.
+            </summary>
+            <param name="builder">The <see cref="T:Microsoft.Azure.WebJobs.IWebJobsBuilder" /> to configure.</param>
+            <param name="configureQueues">Optional. An action to configure <see cref="T:Microsoft.Azure.WebJobs.Host.QueuesOptions" />.</param>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Listeners.CompositeListener.System#Collections#IEnumerable#GetEnumerator">
+            <summary>Returns an enumerator that iterates through a collection.</summary><returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Listeners.QueueListener.Microsoft#Azure#WebJobs#Host#Scale#IScaleMonitor#GetMetricsAsync">
+            <inheritdoc />
+        </member>
+        <member name="M:Microsoft.Azure.WebJobs.Extensions.Storage.Common.Listeners.QueueListener.Microsoft#Azure#WebJobs#Host#Scale#IScaleMonitor#GetScaleStatus(Microsoft.Azure.WebJobs.Host.Scale.ScaleStatusContext)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>
